@@ -29,10 +29,12 @@ const register = async (req, res) => {
       [name, email, password_hash, verification_token]
     );
 
-    // Send verification email (non-blocking)
-    sendVerificationEmail(email, name, verification_token).catch(err =>
-      console.warn('[register] Email send failed:', err.message)
-    );
+    // Send verification email (must be awaited in Serverless environments)
+    try {
+      await sendVerificationEmail(email, name, verification_token);
+    } catch (err) {
+      console.warn('[register] Email send failed:', err.message);
+    }
 
     return res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account before logging in.',
