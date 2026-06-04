@@ -110,3 +110,21 @@ CREATE TABLE Reminders (
   INDEX idx_reminders_user (user_id),
   INDEX idx_reminders_pending (is_sent, remind_at)
 ) ENGINE=InnoDB;
+
+ALTER TABLE Users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE Users ADD COLUMN verification_token VARCHAR(255) NULL;
+ALTER TABLE Users ADD COLUMN reset_token VARCHAR(255) NULL;
+ALTER TABLE Users ADD COLUMN reset_token_expires DATETIME NULL;
+
+CREATE TABLE IF NOT EXISTS QuizResults (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  material_id INT NOT NULL,
+  score INT NOT NULL,
+  total INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+  FOREIGN KEY (material_id) REFERENCES Materials(id) ON DELETE CASCADE,
+  INDEX idx_quiz_results_user (user_id),
+  INDEX idx_quiz_results_material (material_id)
+) ENGINE=InnoDB;
