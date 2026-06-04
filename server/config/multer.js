@@ -1,7 +1,7 @@
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 require('dotenv').config();
 
 cloudinary.config({
@@ -15,7 +15,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'studyflow_materials',
     format: async (req, file) => 'pdf',
-    public_id: (req, file) => uuidv4(),
+    public_id: (req, file) => crypto.randomUUID(),
     resource_type: 'raw', // Essential for non-image files like PDFs
   },
 });
