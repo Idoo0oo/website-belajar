@@ -207,7 +207,7 @@ const AdminDashboard = () => {
                       <p className="text-xs">{m.user_email}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <a href={`/uploads/${m.file_path}?token=${localStorage.getItem('token')}`} target="_blank" rel="noreferrer" className="text-misty-deep hover:underline">
+                      <a href={m.file_path.startsWith('http') ? m.file_path : `/uploads/${m.file_path}?token=${localStorage.getItem('token')}`} target="_blank" rel="noreferrer" className="text-misty-deep hover:underline">
                         View PDF
                       </a>
                     </td>

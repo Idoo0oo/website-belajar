@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const db = require('../config/db');
+const cloudinary = require('cloudinary').v2;
 
 /**
  * GET /api/materials
@@ -53,7 +54,7 @@ const uploadMaterial = async (req, res) => {
     return res.status(400).json({ message: 'Title is required.' });
   }
 
-  const filePath = req.file.filename; // stored relative, served via /uploads
+  const filePath = req.file.path; // Cloudinary secure URL
   const fileType = req.file.mimetype;
 
   try {
@@ -84,15 +85,24 @@ const deleteMaterial = async (req, res) => {
     }
 
     const material = rows[0];
-    const filePath = path.join(__dirname, '..', 'uploads', material.file_path);
 
     // Delete from DB first
     await db.query('DELETE FROM Materials WHERE id = ?', [material.id]);
 
-    // Delete file from disk (non-blocking, best effort)
-    fs.unlink(filePath, (err) => {
-      if (err) console.warn('[deleteMaterial] File not found on disk:', filePath);
-    });
+    // Delete from Cloudinary (non-blocking, best effort)
+    try {
+      if (material.file_path && material.file_path.includes('cloudinary.com')) {
+        const urlParts = material.file_path.split('/upload/');
+        if (urlParts.length === 2) {
+          const pathParts = urlParts[1].split('/');
+          pathParts.shift(); // Remove version (v12345)
+          const publicId = pathParts.join('/'); // e.g. studyflow_materials/UUID.pdf
+          await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+        }
+      }
+    } catch (err) {
+      console.warn('[deleteMaterial] Failed to delete from Cloudinary:', err.message);
+    }
 
     return res.status(200).json({ message: 'Material deleted.' });
   } catch (err) {

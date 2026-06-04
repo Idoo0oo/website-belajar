@@ -79,10 +79,10 @@ const DocumentViewer = () => {
   if (loading) return <div className="p-8 text-center text-dark-muted">Loading document...</div>;
   if (error || !material) return <div className="p-8 text-center text-red-400">{error}</div>;
 
-  // Append JWT to URL so the server's uploadsAuth middleware can verify it.
-  // The Vite proxy handles /uploads routing to Express in dev.
-  const token = localStorage.getItem('token');
-  const fileUrl = `/uploads/${material.file_path}?token=${token}`;
+  // Use direct URL if it's a Cloudinary URL (starts with http), otherwise fallback to local upload proxy
+  const fileUrl = material.file_path.startsWith('http')
+    ? material.file_path
+    : `/uploads/${material.file_path}?token=${localStorage.getItem('token')}`;
 
   return (
     <div className="relative flex flex-col lg:flex-row gap-6 h-[calc(100vh-10rem)]">
