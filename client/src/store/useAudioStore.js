@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 
 const TRACKS = {
-  lofi:       'https://upload.wikimedia.org/wikipedia/commons/4/4b/Lofi_Beat_Loop.ogg',
-  whitenoise: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Waves_on_a_gravel_beach.ogg',
-  rain:       'https://upload.wikimedia.org/wikipedia/commons/4/44/Rain_on_roof_of_car.ogg',
+  lofi:       'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3',
+  whitenoise: 'https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg',
+  rain:       'https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg',
 };
 
 // Audio object lives in module scope — survives page navigation

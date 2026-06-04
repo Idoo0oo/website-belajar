@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Inbox, FileText, BrainCircuit, Trash2 } from 'lucide-react';
+import { Upload, Inbox, FileText, BrainCircuit, Trash2, Search } from 'lucide-react';
 import api from '../hooks/useApi';
+import Swal from 'sweetalert2';
 
 const Materials = () => {
   const [materials, setMaterials] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
   const [title, setTitle]         = useState('');
   const [error, setError]         = useState('');
@@ -43,10 +45,24 @@ const Materials = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this material and all its tags/flashcards?')) return;
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Delete this material and all its tags/flashcards?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!'
+    });
+    if (!result.isConfirmed) return;
+
     await api.delete(`/materials/${id}`);
     fetchMaterials();
   };
+
+  const filteredMaterials = materials.filter(m =>
+    m.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -62,7 +78,7 @@ const Materials = () => {
             placeholder="Document title..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-dark-surface dark:text-white placeholder:text-dark-muted text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50"
+            className="w-full px-4 py-2.5 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-dark-surface dark:text-white placeholder:text-dark-muted text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50"
           />
           <div className="flex gap-3">
             <input
@@ -85,15 +101,29 @@ const Materials = () => {
         </form>
       </div>
 
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="font-bold text-dark-surface dark:text-white text-lg">My Materials</h3>
+        <div className="relative w-full max-w-xs">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-muted" />
+          <input
+            type="text"
+            placeholder="Search materials..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-dark-surface dark:text-white placeholder-dark-muted text-sm focus:outline-none focus:border-lavender/50 transition-colors"
+          />
+        </div>
+      </div>
+
       {/* Materials list */}
-      {materials.length === 0 ? (
+      {filteredMaterials.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center text-dark-muted flex flex-col items-center">
           <Inbox size={48} className="mb-4 text-dark-muted/50" />
-          <p className="text-sm">No materials yet. Upload your first PDF above.</p>
+          <p className="text-sm">{searchQuery ? 'No materials match your search.' : 'No materials yet. Upload your first PDF above.'}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {materials.map((m) => (
+          {filteredMaterials.map((m) => (
             <div key={m.id} className="glass-card rounded-2xl p-4 flex flex-col gap-3 hover:scale-[1.01] transition-transform">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-misty/20 flex items-center justify-center text-misty-deep shrink-0">
@@ -109,7 +139,7 @@ const Materials = () => {
               <div className="flex gap-2 mt-1">
                 <button
                   onClick={() => navigate(`/viewer/${m.id}`)}
-                  className="flex-1 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-dark-surface dark:text-white transition-colors"
+                  className="flex-1 py-2 rounded-xl bg-dark-border/5 dark:bg-white/5 hover:bg-dark-border/10 dark:hover:bg-white/10 text-xs font-bold text-dark-surface dark:text-white transition-colors"
                 >
                   Read & Tag
                 </button>

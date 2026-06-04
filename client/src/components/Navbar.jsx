@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import { Sun, Moon } from 'lucide-react';
 import TimerPill from './TimerPill';
 
 const PAGE_TITLES = {
@@ -68,7 +69,7 @@ const Navbar = ({ isCollapsed, setCollapsed, darkMode, setDarkMode }) => {
         aria-label="Toggle dark mode"
         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       >
-        {darkMode ? '☀️' : '🌙'}
+        {darkMode ? <Sun size={18} /> : <Moon size={18} />}
       </button>
     </header>
   );

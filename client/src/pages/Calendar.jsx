@@ -58,14 +58,14 @@ const Calendar = () => {
             placeholder="Subject or topic..."
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-dark-surface dark:text-white placeholder:text-dark-muted text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50"
+            className="flex-1 px-4 py-2.5 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-dark-surface dark:text-white placeholder:text-dark-muted text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50"
           />
           <input
             id="reminder-datetime"
             type="datetime-local"
             value={form.remind_at}
             onChange={(e) => setForm({ ...form, remind_at: e.target.value })}
-            className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-dark-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50"
+            className="px-4 py-2.5 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-dark-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50"
           />
           <button
             id="btn-add-reminder"

@@ -8,9 +8,14 @@ const authRoutes = require('./routes/authRoutes');
 const materialRoutes = require('./routes/materialRoutes');
 const flashcardRoutes = require('./routes/flashcardRoutes');
 const quizRoutes = require('./routes/quizRoutes');
+const quizResultsRoutes = require('./routes/quizResultsRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const reminderRoutes = require('./routes/reminderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+
+// Security Middleware
+const { authLimiter, quizLimiter } = require('./middleware/rateLimiter');
+const uploadsAuth = require('./middleware/uploadsAuth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,14 +28,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static file serving for uploaded PDFs
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Static file serving for uploaded PDFs — protected behind JWT auth
+app.use('/uploads', uploadsAuth, express.static(path.join(__dirname, 'uploads')));
 
 // ─── Routes ─────────────────────────────────────────────────
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);  // Rate-limited: 10 req/15min
 app.use('/api/materials', materialRoutes);
 app.use('/api/flashcards', flashcardRoutes);
-app.use('/api/quiz', quizRoutes);
+app.use('/api/quiz', quizLimiter, quizRoutes);  // Rate-limited for AI generation
+app.use('/api/quiz-results', quizResultsRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/admin', adminRoutes);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, FileText, Layers, Trash2, Key } from 'lucide-react';
 import api from '../hooks/useApi';
+import Swal from 'sweetalert2';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({ users: 0, materials: 0, flashcards: 0 });
@@ -32,38 +33,67 @@ const AdminDashboard = () => {
   }, []);
 
   const handleDeleteUser = async (id) => {
-    if (!confirm('WARNING: Deleting a user will permanently delete ALL their materials, flashcards, and data. Proceed?')) return;
+    const result = await Swal.fire({
+      title: 'WARNING: Delete User?',
+      text: 'Deleting a user will permanently delete ALL their materials, flashcards, and data. Proceed?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete user'
+    });
+    if (!result.isConfirmed) return;
+    
     try {
       await api.delete(`/admin/users/${id}`);
       fetchData();
+      Swal.fire('Deleted!', 'User has been deleted.', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete user.');
+      Swal.fire('Error', err.response?.data?.message || 'Failed to delete user.', 'error');
     }
   };
 
   const handleDeleteMaterial = async (id) => {
-    if (!confirm('Are you sure you want to permanently delete this material and its associated flashcards?')) return;
+    const result = await Swal.fire({
+      title: 'Delete Material?',
+      text: 'Are you sure you want to permanently delete this material and its associated flashcards?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it'
+    });
+    if (!result.isConfirmed) return;
+    
     try {
       await api.delete(`/admin/materials/${id}`);
       fetchData();
+      Swal.fire('Deleted!', 'Material has been deleted.', 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete material.');
+      Swal.fire('Error', err.response?.data?.message || 'Failed to delete material.', 'error');
     }
   };
 
   const handleResetPassword = async (id, name) => {
-    const newPassword = prompt(`Enter new password for ${name} (minimum 8 characters):`);
+    const { value: newPassword } = await Swal.fire({
+      title: `Reset Password for ${name}`,
+      input: 'password',
+      inputLabel: 'Enter new password (minimum 8 characters)',
+      inputPlaceholder: 'New password',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) return 'You need to write something!';
+        if (value.length < 8) return 'Password must be at least 8 characters long.';
+      }
+    });
+
     if (!newPassword) return; // User cancelled
-    if (newPassword.length < 8) {
-      alert('Password must be at least 8 characters long.');
-      return;
-    }
 
     try {
       await api.put(`/admin/users/${id}/password`, { newPassword });
-      alert(`Password for ${name} has been successfully changed.`);
+      Swal.fire('Success', `Password for ${name} has been successfully changed.`, 'success');
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to change password.');
+      Swal.fire('Error', err.response?.data?.message || 'Failed to change password.', 'error');
     }
   };
 
@@ -86,7 +116,7 @@ const AdminDashboard = () => {
           { label: 'Total Flashcards', value: stats.flashcards, icon: <Layers size={24} className="text-misty-deep" /> },
         ].map((stat) => (
           <div key={stat.label} className="glass-card rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 bg-white/5 rounded-xl">{stat.icon}</div>
+            <div className="p-3 bg-dark-border/5 dark:bg-white/5 rounded-xl">{stat.icon}</div>
             <div>
               <p className="text-2xl font-bold text-dark-surface dark:text-white">{stat.value}</p>
               <p className="text-xs text-dark-muted">{stat.label}</p>
@@ -120,7 +150,7 @@ const AdminDashboard = () => {
         {activeTab === 'users' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-dark-muted uppercase bg-white/5">
+              <thead className="text-xs text-dark-muted uppercase bg-dark-border/5 dark:bg-white/5">
                 <tr>
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Name</th>
@@ -129,14 +159,14 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-dark-border/10 dark:divide-white/5">
                 {users.map(u => (
-                  <tr key={u.id} className="hover:bg-white/5 transition-colors text-dark-surface dark:text-white">
+                  <tr key={u.id} className="hover:bg-dark-border/5 dark:hover:bg-white/5 transition-colors text-dark-surface dark:text-white">
                     <td className="px-6 py-4">{u.id}</td>
                     <td className="px-6 py-4 font-semibold">{u.name}</td>
                     <td className="px-6 py-4">{u.email}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${u.role === 'superadmin' ? 'bg-misty/20 text-misty-deep' : 'bg-white/10 text-dark-muted'}`}>
+                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${u.role === 'superadmin' ? 'bg-misty/20 text-misty-deep' : 'bg-dark-border/10 dark:bg-white/10 text-dark-muted'}`}>
                         {u.role}
                       </span>
                     </td>
@@ -158,7 +188,7 @@ const AdminDashboard = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-dark-muted uppercase bg-white/5">
+              <thead className="text-xs text-dark-muted uppercase bg-dark-border/5 dark:bg-white/5">
                 <tr>
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Title</th>
@@ -167,9 +197,9 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-dark-border/10 dark:divide-white/5">
                 {materials.map(m => (
-                  <tr key={m.id} className="hover:bg-white/5 transition-colors text-dark-surface dark:text-white">
+                  <tr key={m.id} className="hover:bg-dark-border/5 dark:hover:bg-white/5 transition-colors text-dark-surface dark:text-white">
                     <td className="px-6 py-4">{m.id}</td>
                     <td className="px-6 py-4 font-semibold truncate max-w-xs">{m.title}</td>
                     <td className="px-6 py-4 text-dark-muted">
@@ -177,7 +207,7 @@ const AdminDashboard = () => {
                       <p className="text-xs">{m.user_email}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <a href={`/uploads/${m.file_path}`} target="_blank" rel="noreferrer" className="text-misty-deep hover:underline">
+                      <a href={`/uploads/${m.file_path}?token=${localStorage.getItem('token')}`} target="_blank" rel="noreferrer" className="text-misty-deep hover:underline">
                         View PDF
                       </a>
                     </td>

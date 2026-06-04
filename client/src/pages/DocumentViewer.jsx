@@ -5,6 +5,7 @@ import { Leaf, CheckCircle2, AlertTriangle, AlertOctagon, Sparkles } from 'lucid
 import api from '../hooks/useApi';
 import useTimerStore from '../store/useTimerStore';
 import { getRandomAffirmation } from '../utils/affirmations';
+import Swal from 'sweetalert2';
 
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -59,10 +60,11 @@ const DocumentViewer = () => {
     setGenerating(true);
     try {
       const res = await api.post('/flashcards/auto-generate', { material_id: id });
-      alert(res.data.message);
-      navigate('/flashcards');
+      Swal.fire('Success', res.data.message, 'success').then(() => {
+        navigate('/flashcards');
+      });
     } catch (err) {
-      alert('Failed to generate flashcards.');
+      Swal.fire('Error', 'Failed to generate flashcards.', 'error');
     } finally {
       setGenerating(false);
     }
@@ -77,8 +79,10 @@ const DocumentViewer = () => {
   if (loading) return <div className="p-8 text-center text-dark-muted">Loading document...</div>;
   if (error || !material) return <div className="p-8 text-center text-red-400">{error}</div>;
 
-  // The Vite proxy handles /uploads routing to Express in dev
-  const fileUrl = `/uploads/${material.file_path}`;
+  // Append JWT to URL so the server's uploadsAuth middleware can verify it.
+  // The Vite proxy handles /uploads routing to Express in dev.
+  const token = localStorage.getItem('token');
+  const fileUrl = `/uploads/${material.file_path}?token=${token}`;
 
   return (
     <div className="relative flex flex-col lg:flex-row gap-6 h-[calc(100vh-10rem)]">
@@ -86,7 +90,7 @@ const DocumentViewer = () => {
       {isBreak && (
         <div className="absolute inset-0 z-30 glass-card bg-dark-base/80 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center rounded-2xl overflow-hidden animate-fade-in">
           <Leaf size={64} className="mb-6 text-sage animate-bounce" />
-          <h2 className="text-3xl font-bold text-dark-surface dark:text-white mb-4">Mandatory Break Time</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Mandatory Break Time</h2>
           <p className="text-lg text-white/80 max-w-md mb-8">
             Your brain needs this time to consolidate what you just learned. Step away from the screen, stretch, or get some water.
           </p>
@@ -99,7 +103,7 @@ const DocumentViewer = () => {
       {/* Main PDF Viewer Area */}
       <div className="flex-1 glass-card rounded-2xl flex flex-col overflow-hidden relative bg-white/40 dark:bg-dark-base/40">
         {/* Toolbar */}
-        <div className="h-14 border-b border-white/20 flex items-center justify-between px-4 shrink-0 bg-white/5 backdrop-blur-md z-10">
+        <div className="h-14 border-b border-dark-border/20 dark:border-white/20 flex items-center justify-between px-4 shrink-0 bg-dark-border/5 dark:bg-white/5 backdrop-blur-md z-10">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/materials')} className="text-xs font-semibold text-dark-muted hover:text-dark-surface dark:hover:text-white transition-colors">
               ← Back
@@ -108,9 +112,9 @@ const DocumentViewer = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button onClick={() => setScale(s => Math.max(0.5, s - 0.2))} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-dark-surface dark:text-white font-bold" title="Zoom Out">-</button>
+            <button onClick={() => setScale(s => Math.max(0.5, s - 0.2))} className="w-8 h-8 rounded-lg hover:bg-dark-border/10 dark:hover:bg-white/10 flex items-center justify-center text-dark-surface dark:text-white font-bold" title="Zoom Out">-</button>
             <span className="text-xs font-mono w-10 text-center text-dark-surface dark:text-white">{Math.round(scale * 100)}%</span>
-            <button onClick={() => setScale(s => Math.min(3, s + 0.2))} className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center text-dark-surface dark:text-white font-bold" title="Zoom In">+</button>
+            <button onClick={() => setScale(s => Math.min(3, s + 0.2))} className="w-8 h-8 rounded-lg hover:bg-dark-border/10 dark:hover:bg-white/10 flex items-center justify-center text-dark-surface dark:text-white font-bold" title="Zoom In">+</button>
           </div>
         </div>
 
@@ -133,7 +137,7 @@ const DocumentViewer = () => {
         </div>
 
         {/* Bottom Pagination */}
-        <div className="h-14 border-t border-white/20 flex items-center justify-center gap-4 shrink-0 bg-white/5 backdrop-blur-md z-10">
+        <div className="h-14 border-t border-dark-border/20 dark:border-white/20 flex items-center justify-center gap-4 shrink-0 bg-dark-border/5 dark:bg-white/5 backdrop-blur-md z-10">
           <button
             disabled={pageNumber <= 1}
             onClick={() => setPageNumber(p => p - 1)}
@@ -184,8 +188,8 @@ const DocumentViewer = () => {
                   onClick={() => handleTagPage(t.status)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? `${t.color} text-dark-base font-bold ring-2 ring-white/50 scale-[1.02] shadow-md`
-                      : 'bg-white/5 hover:bg-white/10 text-dark-muted hover:text-dark-surface dark:hover:text-white'
+                      ? `${t.color} text-dark-base font-bold ring-2 ring-dark-border/30 dark:ring-white/50 scale-[1.02] shadow-md`
+                      : 'bg-dark-border/5 dark:bg-white/5 hover:bg-dark-border/10 dark:hover:bg-white/10 text-dark-muted hover:text-dark-surface dark:hover:text-white'
                   }`}
                 >
                   <span className="shrink-0">{t.icon}</span>

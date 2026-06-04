@@ -3,19 +3,25 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import AmbientPlayer from './AmbientPlayer';
+import ChangePasswordModal from './ChangePasswordModal';
+import { MailWarning, X } from 'lucide-react';
 
 const Layout = () => {
-  const [isCollapsed, setCollapsed] = useState(true); // mobile: collapsed by default
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem('darkMode') === 'true'
-  );
+  const [isCollapsed, setCollapsed] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved === null ? true : saved === 'true';
+  });
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [showVerifyBanner, setShowVerifyBanner] = useState(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.email_verified === false;
+  });
 
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} setCollapsed={setCollapsed} />
+      <Sidebar isCollapsed={isCollapsed} setCollapsed={setCollapsed} onChangePw={() => setShowChangePw(true)} />
 
-      {/* Main content area */}
       <div
         className={`
           flex-1 flex flex-col min-h-screen
@@ -23,7 +29,6 @@ const Layout = () => {
           ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}
         `}
       >
-        {/* Top navbar — fixed, above content */}
         <Navbar
           isCollapsed={isCollapsed}
           setCollapsed={setCollapsed}
@@ -31,16 +36,29 @@ const Layout = () => {
           setDarkMode={setDarkMode}
         />
 
-        {/* Page content — padded for navbar (top) + player (bottom) */}
-        <main className="flex-1 pt-14 pb-14 overflow-auto">
+        {/* Email verification banner */}
+        {showVerifyBanner && (
+          <div className="fixed top-14 left-0 right-0 z-30 bg-amber-500/90 backdrop-blur-sm flex items-center justify-between px-4 py-2">
+            <div className="flex items-center gap-2 text-dark-base text-sm font-medium">
+              <MailWarning size={16} />
+              Please verify your email address. Check your inbox for a verification link.
+            </div>
+            <button onClick={() => setShowVerifyBanner(false)} className="text-dark-base hover:text-black">
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        <main className={`flex-1 overflow-auto pb-14 ${showVerifyBanner ? 'pt-22' : 'pt-14'}`}>
           <div className="p-6 animate-fade-in">
             <Outlet />
           </div>
         </main>
 
-        {/* Ambient audio player — fixed, below content */}
         <AmbientPlayer isCollapsed={isCollapsed} />
       </div>
+
+      {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
     </div>
   );
 };

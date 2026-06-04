@@ -3,7 +3,7 @@ import { Music, Waves, CloudRain, VolumeX, Volume1, Volume2, Play, Pause } from 
 
 const TRACKS = [
   { id: 'lofi',       label: 'Lo-Fi',        icon: <Music size={14} /> },
-  { id: 'whitenoise', label: 'White Noise',  icon: <Waves size={14} /> },
+  { id: 'whitenoise', label: 'Ocean Waves',  icon: <Waves size={14} /> },
   { id: 'rain',       label: 'Rain',         icon: <CloudRain size={14} /> },
 ];
 

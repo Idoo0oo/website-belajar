@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Inbox } from 'lucide-react';
+import { Inbox, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 import api from '../hooks/useApi';
 
 const Flashcards = () => {
@@ -48,6 +49,37 @@ const Flashcards = () => {
     setFlippedCards(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const exportToPDF = () => {
+    if (flashcards.length === 0) return;
+    
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('StudyFlow Flashcards', 20, 20);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+    
+    let y = 45;
+    flashcards.forEach((card, index) => {
+      // Add new page if needed
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Q${index + 1}: ${card.question}`, 20, y);
+      
+      doc.setFont('helvetica', 'normal');
+      // Handle multiline answers
+      const splitAnswer = doc.splitTextToSize(`A: ${card.answer}`, 170);
+      doc.text(splitAnswer, 20, y + 7);
+      
+      y += 10 + (splitAnswer.length * 5) + 5;
+    });
+    
+    doc.save('studyflow-flashcards.pdf');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header & Filter */}
@@ -70,44 +102,54 @@ const Flashcards = () => {
             Weak Areas Only
           </button>
         </div>
+        <button
+          onClick={exportToPDF}
+          disabled={flashcards.length === 0}
+          className="flex items-center gap-2 px-4 py-2 bg-dark-border/5 dark:bg-white/10 hover:bg-dark-border/10 dark:hover:bg-white/20 text-dark-surface dark:text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50"
+        >
+          <Download size={16} /> Export PDF
+        </button>
       </div>
 
       {/* Manual Creation Form */}
-      <form onSubmit={handleAdd} className="glass-card rounded-2xl p-6 flex flex-col md:flex-row gap-4 items-start">
-        <div className="w-full md:w-1/4">
+      <form onSubmit={handleAdd} className="glass-card rounded-2xl p-6 flex flex-col gap-4 items-start">
+        <div className="w-full md:w-1/2">
           <label className="block text-xs font-semibold text-dark-muted mb-1.5">Material</label>
           <select
             value={form.material_id}
             onChange={(e) => setForm({ ...form, material_id: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50 text-dark-surface dark:text-white"
+            className="w-full px-3 py-2 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50 text-dark-surface dark:text-white"
           >
             <option value="" disabled className="text-gray-500">Select material...</option>
             {materials.map(m => <option key={m.id} value={m.id} className="text-black">{m.title}</option>)}
           </select>
         </div>
-        <div className="w-full md:w-1/3">
+
+        <div className="w-full">
           <label className="block text-xs font-semibold text-dark-muted mb-1.5">Question</label>
-          <input
-            type="text"
+          <textarea
+            rows={2}
             value={form.question}
             onChange={(e) => setForm({ ...form, question: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50 text-dark-surface dark:text-white placeholder:text-dark-muted/50"
+            className="w-full px-3 py-2 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50 text-dark-surface dark:text-white placeholder:text-dark-muted/50 resize-none"
             placeholder="e.g. What is Active Recall?"
           />
         </div>
-        <div className="w-full md:w-1/3">
+
+        <div className="w-full">
           <label className="block text-xs font-semibold text-dark-muted mb-1.5">Answer</label>
-          <input
-            type="text"
+          <textarea
+            rows={3}
             value={form.answer}
             onChange={(e) => setForm({ ...form, answer: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50 text-dark-surface dark:text-white placeholder:text-dark-muted/50"
+            className="w-full px-3 py-2 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-lavender/50 text-dark-surface dark:text-white placeholder:text-dark-muted/50 resize-y"
             placeholder="e.g. Testing memory to strengthen retention."
           />
         </div>
-        <div className="w-full md:w-auto md:self-end">
-          <button type="submit" disabled={loading} className="w-full px-6 py-2 rounded-xl bg-lavender/80 hover:bg-lavender text-dark-base font-bold text-sm transition-all hover:scale-105 disabled:opacity-50">
-            Add
+
+        <div className="w-full flex justify-end">
+          <button type="submit" disabled={loading} className="px-8 py-2 rounded-xl bg-lavender/80 hover:bg-lavender text-dark-base font-bold text-sm transition-all hover:scale-105 disabled:opacity-50">
+            Add Flashcard
           </button>
         </div>
       </form>
@@ -139,7 +181,7 @@ const Flashcards = () => {
                   onClick={() => toggleFlip(card.id)}
                 >
                   {/* Front - Question */}
-                  <div className="flashcard-face glass-card bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flashcard-face glass-card bg-dark-border/5 dark:bg-white/5 hover:bg-dark-border/10 dark:hover:bg-white/10 transition-colors">
                     <span className="absolute top-4 left-4 text-xs font-bold text-lavender-deep">Q.</span>
                     <p className="text-lg font-semibold text-center text-dark-surface dark:text-white">{card.question}</p>
                     <p className="absolute bottom-4 text-xs text-dark-muted font-medium">Click to reveal</p>

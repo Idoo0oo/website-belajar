@@ -13,13 +13,19 @@ import Flashcards   from './pages/Flashcards';
 import Calendar     from './pages/Calendar';
 import AdminDashboard from './pages/AdminDashboard';
 import Quiz         from './pages/Quiz';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword  from './pages/ResetPassword';
+import VerifyEmail    from './pages/VerifyEmail';
 
 const App = () => (
   <BrowserRouter>
     <Routes>
       {/* Public routes */}
-      <Route path="/login"    element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login"           element={<Login />} />
+      <Route path="/register"        element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password"  element={<ResetPassword />} />
+      <Route path="/verify-email"    element={<VerifyEmail />} />
 
       {/* Protected routes — wrapped in Layout shell */}
       <Route

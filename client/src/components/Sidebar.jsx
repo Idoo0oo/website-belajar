@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, Layers, CalendarDays, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, FileText, Layers, CalendarDays, LogOut, Settings, KeyRound } from 'lucide-react';
 
 const NAV_ITEMS = [
   { to: '/',           label: 'Dashboard',  icon: <LayoutDashboard size={20} /> },
@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { to: '/calendar',   label: 'Calendar',   icon: <CalendarDays size={20} /> },
 ];
 
-const Sidebar = ({ isCollapsed, setCollapsed }) => {
+const Sidebar = ({ isCollapsed, setCollapsed, onChangePw }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -33,15 +33,13 @@ const Sidebar = ({ isCollapsed, setCollapsed }) => {
         className={`
           fixed top-0 left-0 h-full z-30 flex flex-col
           transition-all duration-300 ease-in-out
-          glass-card border-r border-white/20
+          glass-card border-r border-dark-border/20 dark:border-white/20
           ${isCollapsed ? '-translate-x-full lg:translate-x-0 lg:w-16' : 'translate-x-0 w-64'}
         `}
       >
         {/* Logo */}
-        <div className={`flex items-center gap-3 p-5 border-b border-white/10 ${isCollapsed ? 'lg:justify-center lg:px-3' : ''}`}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-lavender to-misty flex items-center justify-center text-white text-sm font-bold shadow-lg shrink-0">
-            S
-          </div>
+        <div className={`flex items-center gap-3 p-5 border-b border-dark-border/10 dark:border-white/10 ${isCollapsed ? 'lg:justify-center lg:px-3' : ''}`}>
+          <img src="/favicon.png" alt="StudyFlow Logo" className="w-10 h-10 object-contain shrink-0 drop-shadow-md" />
           {!isCollapsed && (
             <div className="animate-fade-in">
               <p className="text-sm font-bold text-dark-surface dark:text-white leading-tight">StudyFlow</p>
@@ -63,7 +61,7 @@ const Sidebar = ({ isCollapsed, setCollapsed }) => {
                 transition-all duration-200 group
                 ${isActive
                   ? 'bg-lavender/25 text-dark-surface dark:text-white shadow-sm'
-                  : 'text-dark-muted hover:bg-white/10 hover:text-dark-surface dark:hover:text-white'
+                  : 'text-dark-muted hover:bg-dark-border/10 dark:hover:bg-white/10 hover:text-dark-surface dark:hover:text-white'
                 }
                 ${isCollapsed ? 'lg:justify-center lg:px-2' : ''}
               `}
@@ -75,7 +73,7 @@ const Sidebar = ({ isCollapsed, setCollapsed }) => {
 
           {user.role === 'superadmin' && (
             <>
-              <div className="my-2 border-t border-white/5 mx-2"></div>
+              <div className="my-2 border-t border-dark-border/5 dark:border-white/5 mx-2"></div>
               <NavLink
                 to="/admin"
                 id="nav-admin"
@@ -97,7 +95,7 @@ const Sidebar = ({ isCollapsed, setCollapsed }) => {
         </nav>
 
         {/* User section */}
-        <div className={`p-3 border-t border-white/10 ${isCollapsed ? 'lg:flex lg:justify-center' : ''}`}>
+        <div className={`p-3 border-t border-dark-border/10 dark:border-white/10 ${isCollapsed ? 'lg:flex lg:justify-center' : ''}`}>
           {!isCollapsed ? (
             <div className="flex items-center gap-3 px-2 mb-2">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sage to-misty flex items-center justify-center text-white text-xs font-bold shrink-0">
@@ -109,6 +107,19 @@ const Sidebar = ({ isCollapsed, setCollapsed }) => {
               </div>
             </div>
           ) : null}
+          {!isCollapsed && (
+            <button
+              onClick={onChangePw}
+              className={`
+                w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium
+                text-dark-muted hover:bg-lavender/10 hover:text-lavender
+                transition-all duration-200
+              `}
+            >
+              <KeyRound size={18} className="shrink-0" />
+              <span>Change Password</span>
+            </button>
+          )}
           <button
             id="btn-logout"
             onClick={handleLogout}

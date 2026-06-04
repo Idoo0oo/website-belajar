@@ -6,6 +6,7 @@ import api from '../hooks/useApi';
 const Register = () => {
   const [form, setForm]   = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -20,9 +21,8 @@ const Register = () => {
     setLoading(true);
     try {
       const res = await api.post('/auth/register', form);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate('/');
+      setSuccess(res.data.message);
+      setForm({ name: '', email: '', password: '' });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -31,13 +31,11 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-base via-dark-surface to-dark-base p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-light-base via-white to-light-base dark:from-dark-base dark:via-dark-surface dark:to-dark-base p-4">
       <div className="glass-card rounded-2xl p-8 w-full max-w-sm animate-fade-in">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sage to-misty flex items-center justify-center text-white shadow-lg mx-auto mb-3">
-            <Leaf size={28} />
-          </div>
-          <h1 className="text-xl font-bold text-white">Start your journey</h1>
+          <img src="/favicon.png" alt="StudyFlow Logo" className="w-14 h-14 object-contain drop-shadow-md mx-auto mb-3" />
+          <h1 className="text-xl font-bold text-dark-surface dark:text-white">Start your journey</h1>
           <p className="text-sm text-dark-muted mt-1">Create your StudyFlow account</p>
         </div>
 
@@ -56,7 +54,7 @@ const Register = () => {
                 value={form[field.key]}
                 onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
                 placeholder={field.placeholder}
-                className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-dark-muted text-sm focus:outline-none focus:ring-2 focus:ring-sage/50 transition"
+                className="w-full px-4 py-2.5 rounded-xl bg-dark-border/5 dark:bg-white/5 border border-dark-border/20 dark:border-white/10 text-dark-surface dark:text-white placeholder:text-dark-muted text-sm focus:outline-none focus:ring-2 focus:ring-sage/50 transition"
               />
             </div>
           ))}
@@ -65,14 +63,22 @@ const Register = () => {
             <p className="text-xs text-red-400 bg-red-400/10 rounded-lg px-3 py-2">{error}</p>
           )}
 
-          <button
-            id="btn-register-submit"
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-sage/70 hover:bg-sage text-dark-base font-semibold text-sm transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
+          {success && (
+            <p className="text-xs text-sage bg-sage/10 border border-sage/20 rounded-lg px-3 py-3 text-center font-medium leading-relaxed">
+              {success}
+            </p>
+          )}
+
+          {!success && (
+            <button
+              id="btn-register-submit"
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 rounded-xl bg-sage/70 hover:bg-sage text-dark-base font-semibold text-sm transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          )}
         </form>
 
         <p className="text-center text-xs text-dark-muted mt-6">

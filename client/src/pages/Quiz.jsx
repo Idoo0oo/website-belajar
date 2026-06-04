@@ -18,6 +18,7 @@ const Quiz = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [history, setHistory] = useState([]);
 
   const fetchQuiz = useCallback(async (forceRegenerate = false) => {
     setLoading(true);
@@ -58,12 +59,24 @@ const Quiz = () => {
     if (isCorrect) setScore(s => s + 1);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentIndex < quizData.length - 1) {
       setCurrentIndex(i => i + 1);
       setSelectedAnswer(null);
     } else {
       setIsFinished(true);
+      // Save result and fetch history
+      try {
+        await api.post('/quiz-results', {
+          material_id: materialId,
+          score,
+          total: quizData.length
+        });
+        const histRes = await api.get(`/quiz-results/${materialId}`);
+        setHistory(histRes.data.results || []);
+      } catch (err) {
+        console.error('Failed to save/fetch history', err);
+      }
     }
   };
 
@@ -103,7 +116,7 @@ const Quiz = () => {
         <h2 className="text-2xl font-bold text-dark-surface dark:text-white mb-2">Quiz Complete!</h2>
         <p className="text-sm text-dark-muted mb-6">Great job testing your knowledge on "{title}".</p>
         
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 mb-8">
           <button 
             onClick={() => {
               setCurrentIndex(0);
@@ -128,6 +141,23 @@ const Quiz = () => {
             Back to Materials
           </button>
         </div>
+
+        {history.length > 0 && (
+          <div className="text-left border-t border-white/10 pt-6">
+            <h3 className="font-bold text-white mb-4">Your Recent Attempts</h3>
+            <div className="space-y-3">
+              {history.map((h, i) => (
+                <div key={h.id} className="flex items-center justify-between bg-white/5 p-3 rounded-lg">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Score: {h.score}/{h.total}</p>
+                    <p className="text-xs text-dark-muted">{new Date(h.created_at).toLocaleString()}</p>
+                  </div>
+                  {h.score === h.total && <CheckCircle2 size={16} className="text-sage" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
