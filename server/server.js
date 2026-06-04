@@ -18,6 +18,7 @@ const { authLimiter, quizLimiter } = require('./middleware/rateLimiter');
 const uploadsAuth = require('./middleware/uploadsAuth');
 
 const app = express();
+app.set('trust proxy', 1); // Trust proxy for Vercel and express-rate-limit
 const PORT = process.env.PORT || 5000;
 
 // ─── Middleware ──────────────────────────────────────────────
