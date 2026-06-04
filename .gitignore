@@ -1,0 +1,48 @@
+# ============================================
+# Root .gitignore — StudyFlow App
+# ============================================
+
+# --- OS & Editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Dependencies (both client & server) ---
+node_modules/
+
+# --- Build output ---
+client/dist/
+client/dist-ssr/
+
+# --- Environment Variables (NEVER commit these) ---
+.env
+.env.local
+.env.*.local
+
+# --- Uploaded user files ---
+server/uploads/*
+!server/uploads/.gitkeep
+
+# --- AI Agent memory (personal preferences, not project code) ---
+.agents/memory/
+.agents
+
+# --- Misc ---
+*.local
+
+study-management.md
